@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>{{pageTitle}}</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main class="phone">
+  <section class="draft-page">
+    <h1 class="draft-page__title">Добавление степени</h1>
+
+    {{#if degree}}
+      <form class="draft-form">
+        <fieldset class="draft-form__block">
+          <legend class="draft-form__legend">Медиафайлы степени</legend>
+
+          <label class="field">
+            <span class="field__label">Изображение</span>
+            <img class="draft-form__preview" src="{{degree.imageUrl}}" alt="{{degree.degreeName}}">
+            <input class="field__input" type="text" name="imageKey" value="{{degree.imageKey}}">
+          </label>
+
+          <label class="field">
+            <span class="field__label">Видео</span>
+            <video class="draft-form__preview" src="{{degree.videoUrl}}"
+                   poster="{{degree.imageUrl}}" autoplay muted loop playsinline></video>
+            <input class="field__input" type="text" name="videoKey" value="{{degree.videoKey}}">
+          </label>
+        </fieldset>
+
+        <fieldset class="draft-form__block">
+          <legend class="draft-form__legend">Описание и параметры</legend>
+
+          <label class="field">
+            <span class="field__label">Название степени</span>
+            <input class="field__input" type="text" name="degreeName" value="{{degree.degreeName}}">
+          </label>
+
+          <label class="field">
+            <span class="field__label">Краткое описание</span>
+            <input class="field__input" type="text" name="shortDescription"
+                   value="{{degree.shortDescription}}">
+          </label>
+
+          <label class="field">
+            <span class="field__label">Полное описание</span>
+            <textarea class="field__input field__input--area" name="description"
+                      rows="6">{{degree.description}}</textarea>
+          </label>
+
+          <label class="field">
+            <span class="field__label">Верхняя граница индекса PaO₂/FiO₂, мм рт. ст.</span>
+            <input class="field__input" type="number" name="pfRatioUpperBound"
+                   value="{{degree.pfRatioUpperBound}}">
+          </label>
+
+          <label class="field">
+            <span class="field__label">Госпитальная летальность, %</span>
+            <input class="field__input" type="number" name="mortalityRate"
+                   value="{{degree.mortalityRate}}">
+          </label>
+        </fieldset>
+
+        <!-- в первой лабораторной сохранение черновика не выполняется -->
+        <button class="draft-form__submit" type="submit" disabled>
+          Сохранение недоступно
+        </button>
+      </form>
+    {{else}}
+      <p class="grid-page__empty">Черновик степени отсутствует</p>
+    {{/if}}
+  </section>
+
+  {{> tabBar}}
+</main>
+</body>
+</html>

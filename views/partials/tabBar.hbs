@@ -1,0 +1,34 @@
+<!-- панель вкладок из трёх пунктов навигации, общая для всех трёх страниц
+     иконки - векторные (opensource), цвет берётся из CSS через currentColor,
+     поэтому активная вкладка подсвечивается одним правилом -->
+<nav class="tab-bar">
+  <a class="tab-bar__item {{#if (eq activeTab 'feed')}}tab-bar__item--active{{/if}}"
+     href="/oxygenation-degrees/feed">
+    <!-- кардиограмма -->
+    <svg class="tab-bar__icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M2 12h3l2-5 3 10 3-14 3 9h6"/>
+    </svg>
+    <span class="tab-bar__label">Лента</span>
+  </a>
+
+  <a class="tab-bar__item {{#if (eq activeTab 'draft')}}tab-bar__item--active{{/if}}"
+     href="/oxygenation-degrees/draft">
+    <!-- плюс -->
+    <svg class="tab-bar__icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 5v14M5 12h14"/>
+    </svg>
+    <span class="tab-bar__label">Добавление</span>
+  </a>
+
+  <a class="tab-bar__item {{#if (eq activeTab 'grid')}}tab-bar__item--active{{/if}}"
+     href="/oxygenation-degrees">
+    <!-- сетка 2 на 2 -->
+    <svg class="tab-bar__icon" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+      <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+      <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+      <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+    </svg>
+    <span class="tab-bar__label">Плитка</span>
+  </a>
+</nav>

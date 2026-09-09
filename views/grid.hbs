@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>{{pageTitle}}</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main class="phone">
+  <section class="grid-page">
+    <header class="grid-page__header">
+      <h1 class="grid-page__title">Степени оксигенации</h1>
+
+      <!-- Серверная фильтрация по индексу PaO2/FiO2, метод GET, без JavaScript -->
+      <form class="filter" action="/oxygenation-degrees" method="get">
+        <input class="filter__input" type="number" name="maxPfRatio" min="0" step="10"
+               value="{{maxPfRatio}}" placeholder="Индекс PaO₂/FiO₂ не выше, мм рт. ст.">
+        <button class="filter__submit" type="submit">Найти</button>
+      </form>
+    </header>
+
+    {{#if isEmpty}}
+      <p class="grid-page__empty">Степеней с таким индексом не найдено</p>
+    {{else}}
+      <div class="grid">
+        {{#each degrees}}
+          <!-- Клик по карточке открывает ленту с этой степени -->
+          <a class="degree-card" href="/oxygenation-degrees/feed/{{this.id}}">
+            <!-- Изображение степени из MinIO -->
+            <img class="degree-card__image" src="{{this.imageUrl}}" alt="{{this.degreeName}}">
+            <div class="degree-card__body">
+              <p class="degree-card__name">{{this.degreeName}}</p>
+              <!-- Поле предметной области, по которому работает фильтр -->
+              <span class="chip chip--light">до {{this.pfRatioUpperBound}} мм рт. ст.</span>
+              <!-- Количество добавлений в избранное, посчитано в контроллере -->
+              <div class="degree-card__likes" title="В избранном у врачей">
+                <svg class="degree-card__like-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21Z"
+                        fill="currentColor"/>
+                </svg>
+                <span>{{this.likesCount}}</span>
+              </div>
+            </div>
+          </a>
+        {{/each}}
+      </div>
+    {{/if}}
+  </section>
+
+  {{> tabBar}}
+</main>
+</body>
+</html>

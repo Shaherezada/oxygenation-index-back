@@ -1,0 +1,484 @@
+/* ============================================================
+   Стили приложения «Расчёт индекса оксигенации PaO2/FiO2».
+   Стилистика скопирована с MDCalc (https://www.mdcalc.com/).
+
+   Имена переменных совпадают с именами на сайте-источнике, 
+   значения сняты через DevTools с конкретных элементов.
+   Шрифт тоже - IBM Plex Sans.
+
+   Макет портретный, фиксированной ширины - при изменении размера
+   окна ничего не меняется, страница центрируется страница.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+:root {
+  /* Три основных цвета источника */
+  --primary-600: #117a66; /* фон кнопки "Log In" */
+  --primary-700: #0d6a58; /* акцентная полоса под шапкой, bg-primary-700 h-1 */
+  --neutral-700: #414651; /* цвет текста на body */
+
+  /* Остальные цвета той же системы, тоже с конкретных элементов */
+  --primary-500: #1bb193; /* hoover-подчёркивание карточки, hover:before:bg-primary-500 */
+  --neutral-900: #181d27; /* заголовок h1 */
+  --neutral-300: #d5d7da; /* разделитель карточек и обводка chip-а */
+  --neutral-100: #f5f5f5; /* фон строки списка при наведении, hover:bg-neutral-100 */
+  --white: #ffffff; /* фон страницы и карточек */
+
+  /* Размеры экрана */
+  --phone-width: 390px;
+  --phone-height: 844px;
+  --tab-bar-height: 64px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Цвет текста задаётся на body и наследуется потому что
+   универсальный селектор перебил бы currentColor внутри SVG-иконок. */
+body {
+  background-color: var(--neutral-100);
+  color: var(--neutral-700);
+  font-family: 'IBM Plex Sans', Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+}
+
+input,
+textarea,
+button,
+legend {
+  font-family: inherit;
+  color: inherit;
+}
+
+/* фиксированный размер, только центрирование */
+.phone {
+  width: var(--phone-width);
+  height: var(--phone-height);
+  background-color: var(--white);
+  position: relative;
+  overflow: hidden;
+}
+
+/* панель вкладок */
+
+.tab-bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: var(--tab-bar-height);
+  background-color: var(--white);
+  border-top: 1px solid var(--neutral-300);
+  display: flex;
+}
+
+.tab-bar__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-decoration: none;
+  color: var(--neutral-700);
+  transition: all 0.2s;
+}
+
+.tab-bar__item:hover {
+  color: var(--primary-700);
+  background-color: var(--neutral-100);
+}
+
+.tab-bar__item--active {
+  color: var(--primary-600);
+}
+
+/* обводка иконок вкладок задана здесь, а не атрибутами на каждой фигуре */
+.tab-bar__icon {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tab-bar__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: inherit;
+}
+
+/* поля предметной области */
+
+.chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--neutral-300);
+  background-color: rgba(255, 255, 255, 0.92);
+  color: var(--neutral-900);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.chip--light {
+  background-color: var(--white);
+  font-size: 12px;
+  white-space: normal;
+}
+
+/* лента */
+
+.feed {
+  position: relative;
+  width: 100%;
+  height: calc(var(--phone-height) - var(--tab-bar-height));
+  background-color: var(--neutral-900);
+}
+
+.feed__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.feed__title {
+  position: absolute;
+  top: 20px;
+  left: 16px;
+  right: 16px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 26px;
+  color: var(--white);
+  text-shadow: 0 1px 4px rgba(10, 13, 18, 0.6);
+}
+
+.feed__actions {
+  position: absolute;
+  right: 16px;
+  bottom: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.feed__like {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: var(--white);
+}
+
+.feed__like-icon {
+  width: 34px;
+  height: 34px;
+  color: var(--primary-500);
+}
+
+.feed__like-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--white);
+  text-shadow: 0 1px 4px rgba(10, 13, 18, 0.6);
+}
+
+.feed__next {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background-color: var(--primary-600);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.feed__next:hover {
+  background-color: var(--primary-700);
+  box-shadow: 0 4px 6px -1px rgba(10, 13, 18, 0.3);
+}
+
+.feed__bottom {
+  position: absolute;
+  left: 16px;
+  right: 80px;
+  bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.feed__fields {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+/* Раскрытие описания больше/меньше средствами HTML и CSS */
+.feed__description-summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.feed__description-summary::-webkit-details-marker {
+  display: none;
+}
+
+.feed__description-short {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--white);
+  text-shadow: 0 1px 4px rgba(10, 13, 18, 0.6);
+}
+
+.feed__description-toggle {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-500);
+}
+
+.feed__description-toggle::after {
+  content: 'больше';
+}
+
+.feed__description[open] .feed__description-short {
+  display: none;
+}
+
+.feed__description[open] .feed__description-toggle::after {
+  content: 'меньше';
+}
+
+.feed__description-full {
+  margin-top: 6px;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: rgba(10, 13, 18, 0.72);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--white);
+}
+
+/* карточки */
+
+.grid-page {
+  height: calc(var(--phone-height) - var(--tab-bar-height));
+  overflow-y: auto;
+  padding: 20px 16px;
+}
+
+.grid-page__header {
+  border-bottom: 4px solid var(--primary-700);
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+}
+
+.grid-page__title {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+  color: var(--neutral-900);
+  margin-bottom: 12px;
+}
+
+.filter {
+  display: flex;
+  gap: 8px;
+}
+
+.filter__input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--neutral-300);
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: var(--white);
+}
+
+.filter__submit {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--primary-600);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter__submit:hover {
+  background-color: var(--primary-700);
+  box-shadow: 0 4px 6px -1px rgba(10, 13, 18, 0.1);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* Карточка повторяет hoover донора - тень и нижняя линия primary */
+.degree-card {
+  display: block;
+  padding: 12px;
+  background-color: var(--white);
+  border-bottom: 1px solid var(--neutral-300);
+  color: var(--neutral-700);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.degree-card:hover {
+  border-bottom: 2px solid var(--primary-500);
+  box-shadow: 0 4px 6px -1px rgba(10, 13, 18, 0.1);
+}
+
+.degree-card__image {
+  width: 100%;
+  height: 120px;
+  border-radius: 8px;
+  object-fit: cover;
+  background-color: var(--neutral-100);
+}
+
+.degree-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.degree-card__name {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--neutral-900);
+}
+
+.degree-card__likes {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.degree-card__like-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--primary-600);
+}
+
+.grid-page__empty {
+  padding: 24px 0;
+  font-size: 16px;
+  text-align: center;
+}
+
+/* страница добавления */
+
+.draft-page {
+  height: calc(var(--phone-height) - var(--tab-bar-height));
+  overflow-y: auto;
+  padding: 20px 16px;
+}
+
+.draft-page__title {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+  color: var(--neutral-900);
+  border-bottom: 4px solid var(--primary-700);
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+}
+
+.draft-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.draft-form__block {
+  border: 1px solid var(--neutral-300);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.draft-form__legend {
+  padding: 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-700);
+}
+
+.draft-form__preview {
+  width: 100%;
+  height: 160px;
+  border-radius: 8px;
+  object-fit: cover;
+  background-color: var(--neutral-100);
+  display: block;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field__label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--neutral-900);
+}
+
+.field__input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--neutral-300);
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: var(--white);
+}
+
+.field__input--area {
+  resize: vertical;
+  line-height: 20px;
+}
+
+.draft-form__submit {
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--primary-600);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
