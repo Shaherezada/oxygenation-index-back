@@ -529,14 +529,52 @@ legend {
   line-height: 20px;
 }
 
-.draft-form__submit {
-  padding: 10px;
-  border: none;
+/* Плейсхолдер фото/видео, по клику открывается выбор файла */
+.picker {
+  position: relative;
+}
+
+.picker__area {
+  position: relative;
+  display: block;
   border-radius: 8px;
-  background-color: var(--primary-600);
-  color: var(--white);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: not-allowed;
-  opacity: 0.5;
+  cursor: pointer;
+  outline: 1px solid var(--neutral-300);
+  transition: all 0.2s;
+}
+
+.picker__area:hover {
+  outline: 2px solid var(--primary-500);
+  box-shadow: 0 4px 6px -1px rgba(10, 13, 18, 0.1);
+}
+
+/* клик приходит на label, а не на само видео или картинку */
+.picker__area.draft-form__preview {
+  pointer-events: none;
+}
+
+.picker__area::after {
+  content: attr(data-hint);
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.92);
+  color: var(--neutral-900);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* само поле скрыто визуально, но остаётся в форме и доступно с клавиатуры */
+.picker__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.picker:focus-within .picker__area {
+  outline: 2px solid var(--primary-500);
 }
