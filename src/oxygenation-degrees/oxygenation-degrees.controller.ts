@@ -22,7 +22,7 @@ export class OxygenationDegreesController {
 
     // GET /oxygenation-degrees[?maxPfRatio=...]
     @Get()
-    @Render('grid')
+    @Render('oxygenationDegreeGrid')
     getOxygenationDegreeGrid(@Query('maxPfRatio') maxPfRatio?: string) {
         const parsedMaxPfRatio = this.parsePfRatio(maxPfRatio);
         const degrees = this.oxygenationDegreesService.findForGrid(parsedMaxPfRatio);
@@ -45,7 +45,7 @@ export class OxygenationDegreesController {
     }
 
     @Get('draft')
-    @Render('draft')
+    @Render('oxygenationDegreeDraft')
     getDraftOxygenationDegree() {
         const draftDegree = this.oxygenationDegreesService.findDraft();
 
@@ -57,7 +57,7 @@ export class OxygenationDegreesController {
     }
 
     @Get(['feed', 'feed/:id'])
-    @Render('feed')
+    @Render('oxygenationDegreeFeed')
     getOxygenationDegreeFeed(
         @Param('id') id?: string,
         @Query('next') next?: string,

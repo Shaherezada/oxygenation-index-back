@@ -17,7 +17,7 @@
 
           <!-- выбор файла кликом по плейсхолдеру 
                превью из MinIO не меняется-->
-          <label class="field_picker">
+          <label class="field picker">
             <span class="field__label">Изображение</span>
             <span class="picker__area" data-hint="Нажмите чтобы выбрать фото">
               <img class="draft-form__preview" src="{{degree.imageUrl}}" alt="{{degree.degreeName}}">
@@ -26,7 +26,7 @@
             <input class="picker__input" type="file" name="image" accept="image/*">
           </label>
 
-          <label class="field_picker">
+          <label class="field picker">
             <span class="field__label">Видео</span>
             <span class="picker__area" data-hint="Нажмите, чтобы выбрать видео">
               <video class="draft-form__preview" src="{{degree.videoUrl}}"
@@ -75,7 +75,7 @@
     {{/if}}
   </section>
 
-  {{> tabBar}}
+  {{> oxygenationTabBar}}
 </main>
 </body>
 </html>

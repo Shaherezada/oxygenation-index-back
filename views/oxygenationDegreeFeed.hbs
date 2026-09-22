@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>{{pageTitle}}</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main class="phone">
+  {{#if degree}}
+    <section class="feed">
+      <!-- видео степени из MinIO, вертикальная развертка на весь экран -->
+      <video class="feed__video" src="{{degree.videoUrl}}" poster="{{degree.imageUrl}}"
+             autoplay muted loop playsinline></video>
+
+      <!-- справа поверх видео: поля предметной области, избранное и переход к следующей -->
+      <aside class="feed__actions">
+        <div class="feed__param" title="Верхняя граница индекса PaO₂/FiO₂, мм рт. ст.">
+          <span class="feed__param-value">⩽{{degree.pfRatioUpperBound}}</span>
+          <span class="feed__param-label">PaO₂/FiO₂</span>
+        </div>
+        <div class="feed__param" title="Госпитальная летальность">
+          <span class="feed__param-value">{{degree.mortalityRate}}%</span>
+          <span class="feed__param-label">летальность</span>
+        </div>
+        <!-- звезда (вместо сердечка) повторяет элемент "в избранное" MDCalc -->
+        <div class="feed__like" title="В избранном у врачей">
+          <svg class="feed__like-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21Z"
+                  fill="currentColor"/>
+          </svg>
+          <span class="feed__like-count">{{degree.likesCount}}</span>
+        </div>
+
+        <a class="feed__next" href="/oxygenation-degrees/feed/{{degree.id}}?next=true" 
+           title="Следующая степень" aria-label="Следующая степень">
+          <svg class="feed__next-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 5v14M6 13l6 6 6-6"/>
+          </svg>
+        </a>
+      </aside>
+
+      <!-- снизу на всю ширину: название и сразу под ним описание -->
+      <div class="feed__bottom">
+        <h1 class="feed__title">{{degree.degreeName}}</h1>
+
+        <details class="feed__description">
+          <summary class="feed__description-summary">
+            <span class="feed__description-text"><span class="feed__description-toggle"></span>{{degree.description}}</span>          
+          </summary>
+        </details>
+      </div>
+    </section>
+  {{else}}
+    <p class="grid-page__empty">Степень оксигенации не найдена</p>
+  {{/if}}
+
+  {{> oxygenationTabBar}}
+</main>
+</body>
+</html>

@@ -152,26 +152,48 @@ legend {
   display: block;
 }
 
-.feed__title {
+.feed::after {
+  content: '';
   position: absolute;
-  top: 20px;
-  left: 16px;
-  right: 16px;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 26px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 45%;
+  background: linear-gradient(to top, rgba(10, 13, 18, 0.7), rgba(10, 13, 18, 0));
+  pointer-events: none;
+}
+
+/* правая колонка: параметры, избранное, следующая */
+.feed__actions {
+  position: absolute;
+  z-index: 1;
+  right: 12px;
+  bottom: 104px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  transition: opacity 0.2s;
+}
+
+.feed__param {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   color: var(--white);
   text-shadow: 0 1px 4px rgba(10, 13, 18, 0.6);
 }
 
-.feed__actions {
-  position: absolute;
-  right: 16px;
-  bottom: 160px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
+.feed__param-value {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.feed__param-label {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 14px;
 }
 
 .feed__like {
@@ -196,15 +218,25 @@ legend {
 }
 
 .feed__next {
-  padding: 8px 12px;
-  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
   background-color: var(--primary-600);
   color: var(--white);
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  text-align: center;
   transition: all 0.2s;
+}
+
+.feed__next-icon {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .feed__next:hover {
@@ -214,68 +246,71 @@ legend {
 
 .feed__bottom {
   position: absolute;
+  z-index: 1;
   left: 16px;
-  right: 80px;
-  bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  right: 16px;
+  bottom: 16px;
 }
 
-.feed__fields {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
+.feed__title {
+  margin-bottom: 4px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 24px;
+  color: var(--white);
+  text-shadow: 0 1px 4px rgba(10, 13, 18, 0.6);
 }
 
-/* Раскрытие описания больше/меньше средствами HTML и CSS */
+/* Описание в две строки с "... ещё" в конце текста */
 .feed__description-summary {
+  display: flex;
   list-style: none;
   cursor: pointer;
-  display: flex;
-  gap: 6px;
-  align-items: baseline;
 }
 
 .feed__description-summary::-webkit-details-marker {
   display: none;
 }
 
-.feed__description-short {
+.feed__description-text {
+  max-height: 40px;
+  overflow: hidden;
   font-size: 14px;
   line-height: 20px;
   color: var(--white);
   text-shadow: 0 1px 4px rgba(10, 13, 18, 0.6);
 }
 
+.feed__description-text::before {
+  content: '';
+  float: right;
+  height: calc(100% - 20px);
+}
+
 .feed__description-toggle {
-  flex-shrink: 0;
-  font-size: 14px;
+  float: right;
+  clear: both;
+  margin-left: 4px;
   font-weight: 600;
   color: var(--primary-500);
 }
 
 .feed__description-toggle::after {
-  content: 'больше';
+  content: '… ещё';
 }
 
-.feed__description[open] .feed__description-short {
-  display: none;
+.feed__description[open] .feed__description-text {
+  max-height: none;
+}
+
+/* пока описание раскрыто, правая колонка прячется, чтобы текст на неё не наезжал */
+.feed:has(.feed__description[open]) .feed__actions {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .feed__description[open] .feed__description-toggle::after {
   content: 'меньше';
-}
-
-.feed__description-full {
-  margin-top: 6px;
-  padding: 10px;
-  border-radius: 8px;
-  background-color: rgba(10, 13, 18, 0.72);
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--white);
 }
 
 /* карточки */
