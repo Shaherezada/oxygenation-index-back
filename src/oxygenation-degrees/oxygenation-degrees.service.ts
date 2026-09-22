@@ -175,6 +175,6 @@ export class OxygenationDegreesService {
         if (!next) {
             return publishedDegrees[currentIndex];
         }
-        return publishedDegrees[currentIndex + 1 % publishedDegrees.length];
+        return publishedDegrees[(currentIndex + 1) % publishedDegrees.length];
     }
 }

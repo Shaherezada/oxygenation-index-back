@@ -132,8 +132,8 @@ legend {
 
 .chip--light {
   background-color: var(--white);
-  font-size: 12px;
-  white-space: normal;
+  font-size: 13px;
+  line-height: 18px;
 }
 
 /* лента */
@@ -302,10 +302,28 @@ legend {
 
 .filter {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.filter__input {
+.filter__label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--neutral-700);
+}
+
+.filter__value {
+  font-weight: 600;
+  color: var(--primary-600)
+}
+
+.filter__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.filter__slider {
   flex: 1;
   min-width: 0;
   padding: 8px 10px;
@@ -313,6 +331,32 @@ legend {
   border-radius: 8px;
   font-size: 14px;
   background-color: var(--white);
+}
+
+/* слайдер */
+.filter_range {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--primary-600);
+  cursor: pointer;
+}
+
+/* числа шкалы стоят ровно под отметками: у элементов нулевая ширина,
+   поэтому space-between ставит их центры с равным шагом, а отступ 8px -
+   это половина ширина бегунка */
+.filter__scale {
+  display: flex;
+  justify-content: space-between;
+  margin: 4px 8px 0;
+}
+
+.filter__mark {
+  width: 0;
+  display: flex;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--neutral-700);
+  white-space: nowrap;
 }
 
 .filter__submit {
@@ -338,42 +382,56 @@ legend {
   gap: 12px;
 }
 
-/* Карточка повторяет hoover донора - тень и нижняя линия primary */
+/* Карточка отделена рамкой, чтобы читалась на белом фоне
+   при наведении, как на сайте-источнике, рамка окрашивается в primary-500 и появляется тень */
 .degree-card {
-  display: block;
-  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
   background-color: var(--white);
-  border-bottom: 1px solid var(--neutral-300);
+  border: 1px solid var(--neutral-300);
+  border-radius: 8px;
   color: var(--neutral-700);
   text-decoration: none;
   transition: all 0.2s;
 }
 
 .degree-card:hover {
-  border-bottom: 2px solid var(--primary-500);
+  border-color: var(--primary-500);
   box-shadow: 0 4px 6px -1px rgba(10, 13, 18, 0.1);
 }
 
 .degree-card__image {
   width: 100%;
-  height: 120px;
-  border-radius: 8px;
+  height: 130px;
+  border-radius: 6px;
   object-fit: cover;
   background-color: var(--neutral-100);
 }
 
 .degree-card__body {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
   margin-top: 10px;
 }
 
+/* две строки под название, чтобы нижние строки карточек в ряду совпадали */
 .degree-card__name {
-  font-size: 16px;
+  font-size: 15px;
+  min-height: 40px;
   font-weight: 600;
   line-height: 20px;
   color: var(--neutral-900);
+}
+
+.degree-card__footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
 }
 
 .degree-card__likes {

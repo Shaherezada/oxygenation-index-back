@@ -5,7 +5,10 @@ import {
     OxygenationDegreesService,
 } from './oxygenation-degrees.service.js';
 
-interface OxygenationDegreeView {
+// шкала слайдера фильтра по индексу PaO2/FiO2, мм рт. ст.
+const PF_RATIO_SCALE = [100, 200, 300, 400, 500]
+
+interface OxygenationDegreeView extends OxygenationDegree{
     likesCount: number;
     imageUrl: string;
     videoUrl: string;
@@ -26,9 +29,16 @@ export class OxygenationDegreesController {
 
         return {
             pageTitle: 'Степени оксигенации',
-            activePage: 'grid',
-            // значение сохраняется в поле ввода
-            maxPfRatio: maxPfRatio ?? '',
+            activeTab: 'grid',
+            // без фильтра слайдер стоит на максимуме и показываются все степени,
+            // после запроса выбранное значение сохраняется в слайдере
+            filter: {
+                value: parsedMaxPfRatio ?? PF_RATIO_SCALE[PF_RATIO_SCALE.length - 1],
+                min: PF_RATIO_SCALE[0],
+                max: PF_RATIO_SCALE[PF_RATIO_SCALE.length - 1],
+                step: PF_RATIO_SCALE[1] - PF_RATIO_SCALE[0],
+                scale: PF_RATIO_SCALE,
+            },
             degrees: degrees.map((degree) => this.toView(degree)),
             isEmpty: degrees.length === 0,
         };
