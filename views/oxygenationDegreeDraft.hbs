@@ -10,69 +10,69 @@
   <section class="draft-page">
     <h1 class="draft-page__title">Добавление степени</h1>
 
-    {{#if degree}}
-      <form class="draft-form">
-        <fieldset class="draft-form__block">
-          <legend class="draft-form__legend">Медиафайлы степени</legend>
+    <!-- черновика нет: название, фото, видео и кнопка "Далее" - POST создаёт черновик,
+         черновик есть: поля заполнены, кнопка "Опубликовать" - POST меняет статус -->
+    <form class="draft-form" method="post"
+          action="{{#if degree}}/oxygenation-degrees/draft/publish{{else}}/oxygenation-degrees/draft{{/if}}">
+      <fieldset class="draft-form__block">
+        <legend class="draft-form__legend">Медиафайлы степени</legend>
 
-          <!-- выбор файла кликом по плейсхолдеру 
-               превью из MinIO не меняется-->
-          <label class="field picker">
-            <span class="field__label">Изображение</span>
-            <span class="picker__area" data-hint="Нажмите чтобы выбрать фото">
-              <img class="draft-form__preview" src="{{degree.imageUrl}}" alt="{{degree.degreeName}}">
-            </span>
+        <!-- выбор файла кликом по плейсхолдеру. У полей файлов нет name:
+             новые фото и видео в этой лабораторной на сервер не отправляются -->
+        <label class="field picker">
+          <span class="field__label">Изображение</span>
+          <span class="picker__area" data-hint="Нажмите чтобы выбрать фото">
+            {{> oxygenationDegreeImage degree=degree imageClass="draft-form__preview"}}
+          </span>
 
-            <input class="picker__input" type="file" name="image" accept="image/*">
-          </label>
+          <input class="picker__input" type="file" accept="image/*" {{#unless degree}}required{{/unless}}>
+        </label>
 
-          <label class="field picker">
-            <span class="field__label">Видео</span>
-            <span class="picker__area" data-hint="Нажмите, чтобы выбрать видео">
-              <video class="draft-form__preview" src="{{degree.videoUrl}}"
-                    poster="{{degree.imageUrl}}" autoplay muted loop playsinline></video>
-            </span>
+        <label class="field picker">
+          <span class="field__label">Видео</span>
+          <span class="picker__area" data-hint="Нажмите, чтобы выбрать видео">
+            {{> oxygenationDegreeVideo degree=degree videoClass="draft-form__preview"}}
+          </span>
 
-            <input class="picker__input" type="file" name="video" accept="video/*">
-          </label>
-        </fieldset>
+          <input class="picker__input" type="file" accept="video/*" {{#unless degree}}required{{/unless}}>
+        </label>
+      </fieldset>
 
-        <fieldset class="draft-form__block">
-          <legend class="draft-form__legend">Описание и параметры</legend>
+      <fieldset class="draft-form__block">
+        <legend class="draft-form__legend">Описание и параметры</legend>
 
+        <label class="field">
+          <span class="field__label">Название степени</span>
+          <input class="field__input" type="text" name="degreeName" value="{{degree.degreeName}}"
+                 maxlength="100" required>
+        </label>
+
+        <!-- описание и поля по теме заполняются только перед публикацией -->
+        {{#if degree}}
           <label class="field">
-            <span class="field__label">Название степени</span>
-            <input class="field__input" type="text" name="degreeName" value="{{degree.degreeName}}">
-          </label>
-
-          <label class="field">
-            <span class="field__label">Краткое описание</span>
-            <input class="field__input" type="text" name="shortDescription"
-                   value="{{degree.shortDescription}}">
-          </label>
-
-          <label class="field">
-            <span class="field__label">Полное описание</span>
+            <span class="field__label">Описание</span>
             <textarea class="field__input field__input--area" name="description"
-                      rows="6">{{degree.description}}</textarea>
+                      rows="6" maxlength="1000" required>{{degree.description}}</textarea>
           </label>
 
           <label class="field">
             <span class="field__label">Верхняя граница индекса PaO₂/FiO₂, мм рт. ст.</span>
             <input class="field__input" type="number" name="pfRatioUpperBound"
-                   value="{{degree.pfRatioUpperBound}}">
+                   value="{{degree.pfRatioUpperBound}}" min="1" max="500" required>
           </label>
 
           <label class="field">
             <span class="field__label">Госпитальная летальность, %</span>
             <input class="field__input" type="number" name="mortalityRate"
-                   value="{{degree.mortalityRate}}">
+                   value="{{degree.mortalityRate}}" min="0" max="100" required>
           </label>
-        </fieldset>
-      </form>
-    {{else}}
-      <p class="grid-page__empty">Черновик степени отсутствует</p>
-    {{/if}}
+        {{/if}}
+      </fieldset>
+
+      <button class="draft-form__submit" type="submit">
+        {{#if degree}}Опубликовать{{else}}Далее{{/if}}
+      </button>
+    </form>
   </section>
 
   {{> oxygenationTabBar}}

@@ -9,9 +9,8 @@
 <main class="phone">
   {{#if degree}}
     <section class="feed">
-      <!-- видео степени из MinIO, вертикальная развертка на весь экран -->
-      <video class="feed__video" src="{{degree.videoUrl}}" poster="{{degree.imageUrl}}"
-             autoplay muted loop playsinline></video>
+      <!-- видео степени из MinIO или видео по умолчанию, вертикальная развертка на весь экран -->
+      {{> oxygenationDegreeVideo degree=degree videoClass="feed__video"}}
 
       <!-- справа поверх видео: поля предметной области, избранное и переход к следующей -->
       <aside class="feed__actions">

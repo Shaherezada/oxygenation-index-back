@@ -1,0 +1,11 @@
+{{!-- Изображение степени. Если url в БД пустой, сразу выводится изображение
+      по умолчанию с SSR-сервера (public/media). Если url есть, браузер загружает
+      файл из MinIO, а когда файл недоступен, object показывает вложенное
+      изображение по умолчанию. Без JavaScript --}}
+{{#if degree.imageUrl}}
+  <object class="{{imageClass}}" data="{{degree.imageUrl}}" type="image/jpeg">
+    <img class="{{imageClass}}" src="/media/default-oxygenation-degree.jpg" alt="{{degree.degreeName}}">
+  </object>
+{{else}}
+  <img class="{{imageClass}}" src="/media/default-oxygenation-degree.jpg" alt="{{degree.degreeName}}">
+{{/if}}

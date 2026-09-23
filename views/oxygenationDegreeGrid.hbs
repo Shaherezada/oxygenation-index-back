@@ -38,26 +38,39 @@
     {{else}}
       <div class="grid">
         {{#each degrees}}
-          <!-- Клик по карточке открывает ленту с этой степени -->
-          <a class="degree-card" href="/oxygenation-degrees/feed/{{this.id}}">
-            <!-- Изображение степени из MinIO -->
-            <img class="degree-card__image" src="{{this.imageUrl}}" alt="{{this.degreeName}}">
-            <div class="degree-card__body">
-              <p class="degree-card__name">{{this.degreeName}}</p>
-              <div class="degree-card__footer">
-                <!-- Поле предметной области, по которому работает фильтр -->
-                <span class="chip chip--light">PaO₂/FiO₂ ⩽ {{this.pfRatioUpperBound}}</span>
-                <!-- Количество добавлений в избранное, посчитано в контроллере -->
-                <div class="degree-card__likes" title="В избранном у врачей">
-                  <svg class="degree-card__like-icon" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21Z"
-                          fill="currentColor"/>
-                  </svg>
-                  <span>{{this.likesCount}}</span>
+          <article class="degree-card">
+            <!-- Клик по карточке открывает ленту с этой степени -->
+            <a class="degree-card__link" href="/oxygenation-degrees/feed/{{this.id}}">
+              <!-- Изображение степени из MinIO или изображение по умолчанию -->
+              {{> oxygenationDegreeImage degree=this imageClass="degree-card__image"}}
+              <div class="degree-card__body">
+                <p class="degree-card__name">{{this.degreeName}}</p>
+                <div class="degree-card__footer">
+                  <!-- Поле предметной области, по которому работает фильтр -->
+                  <span class="chip chip--light">PaO₂/FiO₂ ⩽ {{this.pfRatioUpperBound}}</span>
+                  <!-- Количество добавлений в избранное - строки таблицы лайков -->
+                  <div class="degree-card__likes" title="В избранном у врачей">
+                    <svg class="degree-card__like-icon" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21Z"
+                            fill="currentColor"/>
+                    </svg>
+                    <span>{{this.likesCount}}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </a>
+            </a>
+
+            <!-- Логическое удаление: POST-запрос, на сервере SQL UPDATE статуса.
+                 Форма стоит рядом со ссылкой, потому что внутри <a> кнопки быть не может -->
+            <form class="degree-card__delete" action="/oxygenation-degrees/{{this.id}}/delete" method="post">
+              <button class="degree-card__delete-button" type="submit"
+                      title="Удалить степень" aria-label="Удалить степень">
+                <svg class="degree-card__delete-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>
+                </svg>
+              </button>
+            </form>
+          </article>
         {{/each}}
       </div>
     {{/if}}

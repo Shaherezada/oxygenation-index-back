@@ -1,0 +1,9 @@
+{{!-- Видео степени. Первый source - файл из MinIO по url из БД, второй - видео
+      по умолчанию с SSR-сервера (public/media). Если url пустой или файл недоступен,
+      браузер сам переходит к следующему source. Без JavaScript --}}
+<video class="{{videoClass}}" autoplay muted loop playsinline>
+  {{#if degree.videoUrl}}
+    <source src="{{degree.videoUrl}}" type="video/mp4">
+  {{/if}}
+  <source src="/media/default-oxygenation-degree.mp4" type="video/mp4">
+</video>

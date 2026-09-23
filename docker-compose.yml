@@ -12,6 +12,32 @@ services:
     volumes:
       - minio-data:/data
     command: server /data --console-address ":9001"
+  
+  postgres:
+    container_name: oxygenation_postgres
+    image: postgres:18-alpine
+    ports:
+      # порт 5432 на ноутбуке занят локальным PostgreSQL, поэтому снаружи 5433
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: oxygenation_user
+      POSTGRES_PASSWORD: oxygenation_password
+      POSTGRES_DB: oxygenation_db
+    volumes:
+      # с 18-й версии данные лежат в /var/lib/postgresql/18/docker,
+      # поэтому том монтируется на /var/lib/postgresql, а не на .../data
+      - postgres-data:/var/lib/postgresql
 
+  adminer:
+    container_name: oxygenation_adminer
+    image: adminer:latest
+    ports:
+      - "8081:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    depends_on:
+      - postgres
+ 
 volumes:
   minio-data:
+  postgres-data:
