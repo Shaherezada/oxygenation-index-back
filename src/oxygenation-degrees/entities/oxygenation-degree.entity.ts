@@ -10,7 +10,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import type { Relation } from 'typeorm';
-import { Doctor } from './doctor.entity.js';
+import { Doctor } from '../../doctors/entities/doctor.entity.js';
 import { OxygenationDegreeLike } from './oxygenation-degree-like.entity.js';
 
 export type OxygenationDegreeStatus = 'draft' | 'published' | 'deleted';
@@ -41,7 +41,7 @@ export class OxygenationDegree {
   imageUrl: string;
 
   @Column({ type: 'varchar', length: 255, default: '' })
-  videoUrl: string; 
+  videoUrl: string;
 
   // два поля по предметной области, заполняются при публикации
 

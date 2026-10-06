@@ -7,7 +7,7 @@ import {
   Unique,
 } from 'typeorm';
 import type { Relation } from 'typeorm';
-import { Doctor } from './doctor.entity.js';
+import { Doctor } from '../../doctors/entities/doctor.entity.js';
 import { OxygenationDegree } from './oxygenation-degree.entity.js';
 
 // лайк (добавление в избранное) - связь многие-ко-многим врач - степень

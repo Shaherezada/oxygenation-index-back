@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { Doctor } from './oxygenation-degrees/entities/doctor.entity.js';
+import { Doctor } from './doctors/entities/doctor.entity.js';
 import { OxygenationDegree } from './oxygenation-degrees/entities/oxygenation-degree.entity.js';
 import { OxygenationDegreeLike } from './oxygenation-degrees/entities/oxygenation-degree-like.entity.js';
 

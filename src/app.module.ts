@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { DoctorsModule } from './doctors/doctors.module.js';
 import { OxygenationDegreesModule } from './oxygenation-degrees/oxygenation-degrees.module.js';
 
 @Module({
@@ -18,12 +19,13 @@ import { OxygenationDegreesModule } from './oxygenation-degrees/oxygenation-degr
         username: config.get('DB_USERNAME'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_DATABASE'),
-        // сущности подключаются через TypeOrmModule.forFeature в модуле степеней
+        // сущности подключаются через TypeOrmModule.forFeature в модулях доменов
         autoLoadEntities: true,
         synchronize: false,
       }),
     }),
     OxygenationDegreesModule,
+    DoctorsModule,
   ],
 })
 export class AppModule {}

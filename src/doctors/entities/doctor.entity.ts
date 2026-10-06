@@ -10,7 +10,7 @@ export class Doctor {
   login: string;
 
   // хэш пароля (bcrypt), сам пароль в БД не хранится
-  @Column ({ type: 'varchar', length: 128})
+  @Column({ type: 'varchar', length: 128 })
   password: string;
 
   @Column({ type: 'varchar', length: 100 })

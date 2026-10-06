@@ -1,185 +1,136 @@
 import {
+  BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   Param,
   ParseIntPipe,
   Post,
+  Put,
   Query,
-  Redirect,
-  Render,
-  Res,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
-import type { Response } from 'express';
-import type { OxygenationDegree } from './entities/oxygenation-degree.entity.js';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { getCurrentDoctorId } from '../doctors/current-doctor.js';
+import { CreateOxygenationDegreeDto } from './dto/create-oxygenation-degree.dto.js';
+import { LikeOxygenationDegreeDto } from './dto/like-oxygenation-degree.dto.js';
+import { OxygenationDegreeFiltersDto } from './dto/oxygenation-degree-filters.dto.js';
+import { OxygenationDegreeResponseDto } from './dto/oxygenation-degree-response.dto.js';
+import { PublishOxygenationDegreeDto } from './dto/publish-oxygenation-degree.dto.js';
 import { OxygenationDegreesService } from './oxygenation-degrees.service.js';
-
-// шкала слайдера фильтра по индексу PaO2/FiO2, мм рт. ст.
-const PF_RATIO_SCALE = [100, 200, 300, 400, 500];
-
-// авторизации пока нет, поэтому все действия выполняет один врач из таблицы doctors
-const CURRENT_DOCTOR_ID = 1;
-
-// поля формы публикации, из POST-запроса они приходят строками
-interface PublishDraftForm {
-  degreeName?: string;
-  description?: string;
-  pfRatioUpperBound?: string;
-  mortalityRate?: string;
+ 
+// файлы формы добавления: одно изображение и одно видео
+interface OxygenationDegreeFiles {
+  image?: Express.Multer.File[];
+  video?: Express.Multer.File[];
 }
-
-interface OxygenationDegreeView extends OxygenationDegree {
-  likesCount: number;
-}
-
+ 
+// домен степеней оксигенации: все методы начинаются с /api/oxygenation-degrees
 @Controller('oxygenation-degrees')
 export class OxygenationDegreesController {
   constructor(
     private readonly oxygenationDegreesService: OxygenationDegreesService,
   ) {}
 
-  // GET /oxygenation-degrees[?maxPfRatio=...]
+  // GET /api/oxygenation-degrees[?maxPfRatio=...] - список опубликованных степеней
   @Get()
-  @Render('oxygenationDegreeGrid')
-  async getOxygenationDegreeGrid(@Query('maxPfRatio') maxPfRatio?: string) {
-    const parsedMaxPfRatio = this.parseNumber(maxPfRatio);
-    const degrees =
-      await this.oxygenationDegreesService.findForGrid(parsedMaxPfRatio);
-
-    return {
-      pageTitle: 'Степени оксигенации',
-      activeTab: 'grid',
-      // без фильтра слайдер стоит на максимуме и показываются все степени,
-      // после запроса выбранное значение сохраняется в слайдере
-      filter: {
-        value: parsedMaxPfRatio ?? PF_RATIO_SCALE[PF_RATIO_SCALE.length - 1],
-        min: PF_RATIO_SCALE[0],
-        max: PF_RATIO_SCALE[PF_RATIO_SCALE.length - 1],
-        step: PF_RATIO_SCALE[1] - PF_RATIO_SCALE[0],
-        scale: PF_RATIO_SCALE,
-      },
-      // лайки каждой степени загружены вместе с ней из таблицы м-м
-      degrees: degrees.map((degree) =>
-        this.toView(degree, degree.likes.length),
-      ),
-      isEmpty: degrees.length === 0,
-    };
-  }
-
-  // GET /oxygenation-degrees/draft
-  @Get('draft')
-  @Render('oxygenationDegreeDraft')
-  async getDraftOxygenationDegree() {
-    const draftDegree =
-      await this.oxygenationDegreesService.findDraft(CURRENT_DOCTOR_ID);
-
-    return {
-      pageTitle: 'Добавление степени',
-      activeTab: 'draft',
-      // нет черновика - форма создания с кнопкой "Далее",
-      // есть - заполненная форма с кнопкой "Опубликовать"
-      degree: draftDegree,
-    };
-  }
-
-  // POST /oxygenation-degrees/draft - кнопка "Далее"
-  @Post('draft')
-  @Redirect('/oxygenation-degrees/draft', 302)
-  async createDraftOxygenationDegree(@Body('degreeName') degreeName?: string) {
-    const trimmedName = degreeName?.trim();
-    if (trimmedName) {
-      await this.oxygenationDegreesService.createDraft(
-        CURRENT_DOCTOR_ID,
-        trimmedName,
-      );
-    }
-  }
-
-  // POST /oxygenation-degrees/draft/publish - кнопка "Опубликовать"
-  @Post('draft/publish')
-  @Redirect('/oxygenation-degrees/draft', 302)
-  async publishDraftOxygenationDegree(@Body() form: PublishDraftForm) {
-    const degreeName = form.degreeName?.trim();
-    const description = form.description?.trim();
-    const pfRatioUpperBound = this.parseNumber(form.pfRatioUpperBound);
-    const mortalityRate = this.parseNumber(form.mortalityRate);
-    // не все поля заполнены - остаёмся на странице черновика
-    if (
-      !degreeName ||
-      !description ||
-      pfRatioUpperBound === undefined ||
-      mortalityRate === undefined
-    ) {
-      return;
-    }
-
-    const publishedId = await this.oxygenationDegreesService.publishDraft(
-      CURRENT_DOCTOR_ID,
-      { degreeName, description, pfRatioUpperBound, mortalityRate },
+  getOxygenationDegrees(
+    @Query() filters: OxygenationDegreeFiltersDto,
+  ): Promise<OxygenationDegreeResponseDto[]> {
+    return this.oxygenationDegreesService.findForGrid(
+      getCurrentDoctorId(),
+      filters.maxPfRatio,
     );
-    // опубликованная степень сразу открывается в ленте
-    if (publishedId !== null) {
-      return { url: `/oxygenation-degrees/feed/${publishedId}` };
-    }
   }
-
-  // GET /oxygenation-degrees/feed[/:id][?next=true]
+ 
+  // GET /api/oxygenation-degrees/draft - черновик текущего врача, id не указывается
+  @Get('draft')
+  getOxygenationDegreeDraft(): Promise<OxygenationDegreeResponseDto> {
+    return this.oxygenationDegreesService.findDraft(getCurrentDoctorId());
+  }
+ 
+  // GET /api/oxygenation-degrees/feed[/:id][?next=true] - лента
   @Get(['feed', 'feed/:id'])
-  @Render('oxygenationDegreeFeed')
-  async getOxygenationDegreeFeed(
-    @Res({ passthrough: true }) response: Response,
-    @Param('id') id?: string,
+  getOxygenationDegreeFeed(
+    @Param('id', new ParseIntPipe({ optional: true })) id?: number,
     @Query('next') next?: string,
-  ) {
-    const parsedId = id === undefined ? undefined : Number(id);
-    const degree = await this.oxygenationDegreesService.findForFeed(
-      Number.isFinite(parsedId) ? parsedId : undefined,
+  ): Promise<OxygenationDegreeResponseDto> {
+    return this.oxygenationDegreesService.findForFeed(
+      getCurrentDoctorId(),
+      id,
       next === 'true',
     );
-
-    // удалённую или несуществующую степень посмотреть нельзя
-    if (!degree) {
-      response.status(404);
-      return {
-        pageTitle: 'Степень не найдена',
-        activeTab: 'feed',
-        degree: null,
-      };
-    }
-
-    const likesCount = await this.oxygenationDegreesService.countLikes(
-      degree.id,
+  }
+ 
+  // POST /api/oxygenation-degrees - добавление: название и файлы image, video
+  @Post()
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'image', maxCount: 1 },
+        { name: 'video', maxCount: 1 },
+      ],
+      {
+        // фото и короткое видео, не больше 50 МБ каждый файл
+        limits: { fileSize: 50 * 1024 * 1024 },
+        // в поле image принимается только изображение, в поле video - только видео
+        fileFilter: (request, file, callback) => {
+          const isAllowed = file.mimetype.startsWith(`${file.fieldname}/`);
+          callback(isAllowed ? null : new BadRequestException(), isAllowed);
+        },
+      },
+    ),
+  )
+  createOxygenationDegree(
+    @Body() dto: CreateOxygenationDegreeDto,
+    @UploadedFiles() files?: OxygenationDegreeFiles,
+  ): Promise<OxygenationDegreeResponseDto> {
+    return this.oxygenationDegreesService.createDraft(
+      getCurrentDoctorId(),
+      dto.degreeName,
+      files?.image?.[0],
+      files?.video?.[0],
     );
-    return {
-      pageTitle: degree.degreeName,
-      activeTab: 'feed',
-      degree: this.toView(degree, likesCount),
-    };
   }
 
-  // POST /oxygenation-degrees/:id/delete - корзина на карточке плитки
-  @Post(':id/delete')
-  @Redirect('/oxygenation-degrees', 302)
-  async deleteOxygenationDegree(@Param('id', ParseIntPipe) id: number) {
-    await this.oxygenationDegreesService.deleteDegree(id);
+  // PUT /api/oxygenation-degrees/:id - публикация черновика
+  @Put(':id')
+  publishOxygenationDegree(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: PublishOxygenationDegreeDto,
+  ): Promise<OxygenationDegreeResponseDto> {
+    return this.oxygenationDegreesService.publishDraft(
+      getCurrentDoctorId(),
+      id,
+      dto,
+    );
+  }
+ 
+  // DELETE /api/oxygenation-degrees/:id - логическое удаление своей степени
+  @Delete(':id')
+  deleteOxygenationDegree(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<void> {
+    return this.oxygenationDegreesService.deleteDegree(
+      getCurrentDoctorId(),
+      id,
+    );
   }
 
-  private toView(
-    degree: OxygenationDegree,
-    likesCount: number,
-  ): OxygenationDegreeView {
-    return {
-      ...degree,
-      likesCount,
-    };
-  }
-
-  // пустая или нечисловая строка означает "значение не задано"
-  private parseNumber(rawValue?: string): number | undefined {
-    if (rawValue === undefined || rawValue.trim() === '') {
-      return undefined;
-    }
-    const parsedValue = Number(rawValue);
-    return Number.isFinite(parsedValue) ? parsedValue : undefined;
+  // POST /api/oxygenation-degrees/:id/like - лайк текущего врача
+  @Post(':id/like')
+  @HttpCode(200)
+  likeOxygenationDegree(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: LikeOxygenationDegreeDto,
+  ): Promise<OxygenationDegreeResponseDto> {
+    return this.oxygenationDegreesService.setLike(
+      getCurrentDoctorId(),
+      id,
+      dto.isLiked,
+    );
   }
 }

@@ -1,23 +1,26 @@
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import type { NestExpressApplication } from '@nestjs/platform-express';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import hbs from 'hbs';
 import { AppModule } from './app.module.js';
-
-const currentDir = dirname(fileURLToPath(import.meta.url));
-const projectRootDir = join(currentDir, '..');
+import { StatusCodeExceptionFilter } from './status-code-exception.filter.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create(AppModule);
 
-  app.setBaseViewsDir(join(projectRootDir, 'views'));
-  app.setViewEngine('hbs');
-  hbs.registerPartials(join(projectRootDir, 'views', 'partials'));
+  // адрес каждого метода веб-сервиса начинается с /api
+  app.setGlobalPrefix('api');
 
-  hbs.registerHelper('eq', (left: unknown, right: unknown) => left === right);
+  // проверка входных данных по DTO: поля, которых в DTO нет (id, status,
+  // creatorId, даты) не принимаются, значения приводятся к типам полей
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
-  app.useStaticAssets(join(projectRootDir, 'public'));
+  // при ошибке клиеет получает только код состояния
+  app.useGlobalFilters(new StatusCodeExceptionFilter());
 
   await app.listen(process.env.PORT ?? 3000);
 }

@@ -1,45 +1,69 @@
-# ЛР №2. База данных PostgreSQL и её подключение к бэкенду.
+# ЛР №3. Веб-сервис для SPA
 
-**Цель** данной лабораторной работы — разработка структуры базы данных и её подключение
-к бэкенду на `NestJS`. Тема — «Расчёт индекса оксигенации (PaO₂/FiO₂)», `услуга` —
-степень оксигенации. Данные степеней переехали из массива в `PostgreSQL`, работа с ними
-идёт через `TypeORM`, изображения и видео по-прежнему хранятся в `MinIO`.
+Веб-сервис на `NestJS` по теме «Расчёт индекса оксигенации (PaO₂/FiO₂)»: `услуга` — степень оксигенации, пользователи — врачи.
+Данные отдаются в `JSON` по `REST`, БД — `PostgreSQL` через `TypeORM`, изображения и видео степеней хранятся в `MinIO`.
 
-## План лабораторной работы
+## Методы веб-сервиса
 
-1. `PostgreSQL` и `Adminer` в `Docker` рядом с `MinIO`.
-2. Настройки подключения в `.env`, `ConfigModule` и `TypeOrmModule`.
-3. Три сущности и миграция ORM отдельной командой.
-4. Наполнение БД SQL-скриптом через `Adminer`.
-5. Получение, поиск, создание и публикация степеней через `ORM`.
-6. Логическое удаление степени SQL-запросом `UPDATE` без `ORM`.
-7. Фото и видео по умолчанию для карточек без медиа.
+Адрес каждого метода начинается с `http://localhost:3000/api`.
 
-## База данных
+| № | Метод | URL | Что принимает | Что возвращает |
+| --- | --- | --- | --- | --- |
+| 1 | `GET` | `/oxygenation-degrees` | параметр `maxPfRatio`, необязательный | `200` и массив степеней |
+| 2 | `GET` | `/oxygenation-degrees/feed`, `/oxygenation-degrees/feed/:id` | параметр `next=true`, необязательный | `200` и степень, `404` |
+| 3 | `GET` | `/oxygenation-degrees/draft` | — | `200` и степень, `404` |
+| 4 | `POST` | `/oxygenation-degrees` | `form-data`: поле `degreeName`, файлы `image` и `video` | `201` и степень, `409` |
+| 5 | `PUT` | `/oxygenation-degrees/:id` | `JSON`: `description`, `pfRatioUpperBound`, `mortalityRate` | `200` и степень, `404` |
+| 6 | `DELETE` | `/oxygenation-degrees/:id` | — | `200` без тела, `404` |
+| 7 | `POST` | `/oxygenation-degrees/:id/like` | `JSON`: `isLiked` — `1` или `0` | `200` и степень, `404` |
+| 8 | `POST` | `/doctors` | `JSON`: `login`, `password`, `fullName` | `201` и врач без пароля, `409` |
+| 9 | `POST` | `/doctors/login` | — | `200`, заглушка до ЛР4 |
+| 10 | `POST` | `/doctors/logout` | — | `200`, заглушка до ЛР4 |
 
-| Таблица | Назначение | Ключи |
-| --- | --- | --- |
-| `doctors` | пользователи — врачи | PK `id` |
-| `oxygenation_degrees` | степени оксигенации (услуги) | PK `id`, FK `creatorId` → `doctors` |
-| `oxygenation_degree_likes` | лайки, м-м врач — степень | PK `id`, FK `doctorId` → `doctors`, FK `oxygenationDegreeId` → `oxygenation_degrees` |
+1. **Список** опубликованных степеней; с `maxPfRatio` — только те, у которых верхняя граница индекса не выше указанной.
+2. **Лента**: одна опубликованная степень. Без `id` — первая, с `id` — указанная, с `?next=true` — следующая, после последней снова первая.
+3. **Черновик** текущего врача; `404` — черновика нет.
+4. **Добавление** черновика с названием. Файлы сохраняются в `MinIO`, в БД записываются их `url`. `409` — черновик у врача уже есть.
+5. **Публикация** своего черновика: заполняются описание и два поля по теме, статус меняется на `published`, ставится дата формирования.
+6. **Удаление** своей степени, логическое: статус меняется на `deleted`.
+7. **Лайк** текущего врача опубликованной степени: `1` ставит, `0` отменяет.
+8. **Регистрация**: в БД сохраняется `bcrypt`-хэш пароля. `409` — логин уже занят.
 
-Каскадного удаления нет, внешние ключи `ON DELETE RESTRICT`. Статус степени —
-`draft`, `published` или `deleted` (ограничение `CHECK`). У врача не больше одного
-черновика — частичный уникальный индекс по `creatorId` для строк со статусом `draft`.
+### Степень в ответе
 
-## Страницы и запросы
+```json
+{
+  "id": 2,
+  "degreeName": "ОРДС лёгкой степени",
+  "description": "Лёгкая степень острого респираторного дистресс-синдрома…",
+  "imageUrl": "http://localhost:9000/oxygenation-media/mild-ards.jpg",
+  "videoUrl": "http://localhost:9000/oxygenation-media/mild-ards.mp4",
+  "pfRatioUpperBound": 300,
+  "mortalityRate": 27,
+  "likesCount": 4,
+  "isCreator": 1,
+  "isLiked": 1
+}
+```
 
-| Метод | URL | Что делает | Как |
-| --- | --- | --- | --- |
-| `GET` | `/oxygenation-degrees/feed[/:id][?next=true]` | лента, из БД одна строка | `ORM` |
-| `GET` | `/oxygenation-degrees/draft` | добавление | `ORM` |
-| `GET` | `/oxygenation-degrees[?maxPfRatio=200]` | плитка с фильтром | `ORM` |
-| `POST` | `/oxygenation-degrees/draft` | «Далее» — создать черновик | `ORM` |
-| `POST` | `/oxygenation-degrees/draft/publish` | «Опубликовать» черновик | `ORM` |
-| `POST` | `/oxygenation-degrees/:id/delete` | логическое удаление | SQL `UPDATE` |
+Незаполненные поля равны `null`. `likesCount` — количество лайков, `isCreator` и `isLiked` — `1` или `0` для текущего врача.
 
-`JavaScript` на клиенте не используется. Если url изображения или видео в БД пустой
-или файл недоступен, показываются фото и видео по умолчанию из `public/media`.
+## Правила
+
+- Статус меняется только так: черновик → опубликована → удалена. Степени в статусе `deleted` клиенту не передаются.
+- Системные поля (`id`, `status`, `creatorId`, `createdAt`, `formedAt`) с клиента не принимаются: поле, которого нет в `DTO`, даёт `400`.
+- Текущий врач задан константой в функции-`singleton` `getCurrentDoctorId()` (`src/doctors/current-doctor.ts`).
+- При ошибке возвращается только код состояния, тело пустое: `400` — неверные данные, `404` — степени нет или она недоступна, `409` — черновик или логин уже есть.
+
+## Таблицы БД
+
+| Таблица | Колонки |
+| --- | --- |
+| `doctors` | `id`, `login` (уникальный), `password` (`bcrypt`-хэш), `fullName` |
+| `oxygenation_degrees` | `id`, `degreeName`, `description`, `status`, `imageUrl`, `videoUrl`, `pfRatioUpperBound`, `mortalityRate`, `createdAt`, `formedAt`, `creatorId` → `doctors.id` |
+| `oxygenation_degree_likes` | `id`, `doctorId` → `doctors.id`, `oxygenationDegreeId` → `oxygenation_degrees.id` |
+
+Внешние ключи `ON DELETE RESTRICT`, статус ограничен `CHECK`. У врача не больше одного черновика (частичный уникальный индекс по `creatorId`), пара врач — степень в лайках уникальна.
 
 ## Запуск
 
@@ -58,20 +82,14 @@ DB_PORT=5433
 DB_USERNAME=oxygenation_user
 DB_PASSWORD=oxygenation_password
 DB_DATABASE=oxygenation_db
+MINIO_ENDPOINT=localhost
+MINIO_PORT=9000
+MINIO_ACCESS_KEY=root
+MINIO_SECRET_KEY=rootpassword
+MINIO_BUCKET=oxygenation-media
 ```
 
-`npm run migrate` собирает проект и создаёт таблицы по сущностям (`src/migrate.ts`).
-После этого в `Adminer` выполняется `scripts/seed.sql`.
-
-Приложение доступно по адресу http://localhost:3000/oxygenation-degrees
-
-## Adminer
-
-http://localhost:8081 — система `PostgreSQL`, сервер `postgres` (имя контейнера в сети
-`Docker`, не `localhost`), пользователь `oxygenation_user`, пароль `oxygenation_password`,
-база `oxygenation_db`. Наполнение: «SQL-запрос» → содержимое `scripts/seed.sql` → «Выполнить».
-
-## MinIO
+Бакет в `MinIO` создаётся один раз и открывается на чтение:
 
 ```bash
 docker exec -it oxygenation_minio mc alias set myminio http://localhost:9000 root rootpassword
@@ -79,6 +97,8 @@ docker exec -it oxygenation_minio mc mb myminio/oxygenation-media
 docker exec -it oxygenation_minio mc anonymous set public myminio/oxygenation-media
 ```
 
-Консоль хранилища — http://localhost:9001, логин `root`, пароль `rootpassword`.
-В бакет `oxygenation-media` загружаются изображения и вертикальные видео, их полные
-адреса хранятся в колонках `imageUrl` и `videoUrl`.
+## Сервисы
+
+- **Postman**: коллекция из 10 запросов — `postman/oxygenation-index.postman_collection.json`. Файлы `image` и `video` выбираются вручную.
+- **Adminer**: http://localhost:8081 — система `PostgreSQL`, сервер `postgres`, пользователь `oxygenation_user`, пароль `oxygenation_password`, база `oxygenation_db`.
+- **Консоль MinIO**: http://localhost:9001 — логин `root`, пароль `rootpassword`.
