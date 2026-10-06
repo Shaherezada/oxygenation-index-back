@@ -394,8 +394,11 @@ legend {
   white-space: nowrap;
 }
 
+/* все кнопки приложения одного стиля: 
+тёмно-зелёная заливка и скругление 8px */
 .filter__submit,
-.draft-form__submit {
+.draft-form__submit,
+.degree-card__delete-button {
   padding: 8px 14px;
   border: none;
   border-radius: 8px;
@@ -408,7 +411,8 @@ legend {
 }
 
 .filter__submit:hover,
-.draft-form__submit:hover {
+.draft-form__submit:hover,
+.degree-card__delete-button:hover {
   background-color: var(--primary-700);
   box-shadow: 0 4px 6px -1px rgba(10, 13, 18, 0.1);
 }
@@ -422,7 +426,6 @@ legend {
 /* Карточка отделена рамкой, чтобы читалась на белом фоне
    при наведении, как на сайте-источнике, рамка окрашивается в primary-500 и появляется тень */
 .degree-card {
-  position: relative;
   display: flex;
   flex-direction: column;
   padding: 10px;
@@ -455,31 +458,19 @@ legend {
   background-color: var(--neutral-100);
 }
 
-/* корзина логического удаления в углу изображения */
+/* корзина логического удаления под карточкой,
+стиль общий с остальными кнопками */
 .degree-card__delete {
-  position: absolute;
-  top: 16px;
-  right: 16px;
+  margin-top: 10px
 }
 
 .degree-card__delete-button {
-  width: 32px;
-  height: 32px;
+  width: 100%;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--neutral-300);
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.92);
-  color: var(--neutral-700);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.degree-card__delete-button:hover {
-  border-color: var(--primary-500);
-  color: var(--neutral-900);
-  box-shadow: 0 4px 6px -1px rgba(10, 13, 18, 0.1);
+  gap: 6px;
 }
 
 .degree-card__delete-icon {

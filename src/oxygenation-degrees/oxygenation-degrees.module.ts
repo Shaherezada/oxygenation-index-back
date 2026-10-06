@@ -8,8 +8,14 @@ import { OxygenationDegreeLike } from './entities/oxygenation-degree-like.entity
 
 @Module({
   // репозитории трёх таблиц; autoLoadEntities добавляет эти сущности в подключение
-  imports: [TypeOrmModule.forFeature([Doctor, OxygenationDegree, OxygenationDegreeLike])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Doctor,
+      OxygenationDegree,
+      OxygenationDegreeLike,
+    ]),
+  ],
   controllers: [OxygenationDegreesController],
-  providers: [OxygenationDegreesService]
+  providers: [OxygenationDegreesService],
 })
 export class OxygenationDegreesModule {}
