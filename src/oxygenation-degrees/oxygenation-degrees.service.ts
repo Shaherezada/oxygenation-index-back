@@ -128,6 +128,7 @@ export class OxygenationDegreesService {
       imageUrl,
       videoUrl,
       status: 'draft',
+      creatorId: doctorId,
     });
     return this.findDraft(doctorId);
   }
