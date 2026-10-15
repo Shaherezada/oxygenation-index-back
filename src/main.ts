@@ -7,7 +7,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // адрес каждого метода веб-сервиса начинается с /api
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('/api');
 
   // проверка входных данных по DTO: поля, которых в DTO нет (id, status,
   // creatorId, даты) не принимаются, значения приводятся к типам полей

@@ -6,7 +6,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThanOrEqual, MoreThan, Not, Repository } from 'typeorm';
 import type { FindOptionsWhere } from 'typeorm';
-import { OxygenationDegreeResponseDto } from './dto/oxygenation-degree-response.dto.js';
+import {
+  OxygenationDegreeCardDto,
+  OxygenationDegreeFeedDto,
+  OxygenationDegreeResponseDto,
+} from './dto/oxygenation-degree-response.dto.js';
 import { PublishOxygenationDegreeDto } from './dto/publish-oxygenation-degree.dto.js';
 import { OxygenationDegree } from './entities/oxygenation-degree.entity.js';
 import { OxygenationDegreeLike } from './entities/oxygenation-degree-like.entity.js';
@@ -25,9 +29,9 @@ export class OxygenationDegreesService {
   // список: опубликованные степени вместе с лайками,
   // фильтр по верхней границе индекса PaO2/FiO2 выполняет БД
   async findForGrid(
-      doctorId: number,
-      maxPfRatio?: number,
-    ): Promise<OxygenationDegreeResponseDto[]> {    
+    doctorId: number,
+    maxPfRatio?: number,
+  ): Promise<OxygenationDegreeCardDto[]> {
     const where: FindOptionsWhere<OxygenationDegree> = { status: 'published' };
     // запрос без фильтра возвращает все опубликованные степени
     if (maxPfRatio !== undefined) {
@@ -40,14 +44,11 @@ export class OxygenationDegreesService {
     });
 
     // лайки каждой степени загружены вместе с ней из таблицы м-м
-    return degrees.map((degree) =>
-      this.toResponseDto(
-        degree,
-        doctorId,
-        degree.likes.length,
-        degree.likes.some((like) => like.doctorId === doctorId),
-      ),
-    );
+    return degrees.map((degree) => ({
+      ...this.toResponseDto(degree),
+      likesCount: degree.likes.length,
+      isCreator: degree.creatorId === doctorId ? 1 : 0,
+    }));
   }
 
   // черновик врача, у каждого не больше одного
@@ -58,20 +59,17 @@ export class OxygenationDegreesService {
     if (!draft) {
       throw new NotFoundException();
     }
-    return this.toResponseDtoWithLikes(draft, doctorId);
+    return this.toResponseDto(draft);
   }
 
   // лента: findOne - это SELECT ... LIMIT 1, из БД приходит одна строка
   async findForFeed(
     doctorId: number,
-    id?: number,
+    id: number,
     next = false,
-  ): Promise<OxygenationDegreeResponseDto> {
+  ): Promise<OxygenationDegreeFeedDto> {
     let degree: OxygenationDegree | null;
-    if (id === undefined) {
-      // лента без id открывает первую опубликованную степень
-      degree = await this.findFirstPublished();
-    } else if (!next) {
+    if (!next) {
       // удалённые степени и черновики по id не открываются
       degree = await this.oxygenationDegreeRepository.findOne({
         where: { id, status: 'published' },
@@ -84,11 +82,11 @@ export class OxygenationDegreesService {
       });
       degree = nextDegree ?? (await this.findFirstPublished());
     }
- 
+
     if (!degree) {
       throw new NotFoundException();
     }
-    return this.toResponseDtoWithLikes(degree, doctorId);
+    return this.toFeedDto(degree, doctorId);
   }
 
   private findFirstPublished(): Promise<OxygenationDegree | null> {
@@ -149,7 +147,11 @@ export class OxygenationDegreesService {
     if (!updateResult.affected) {
       throw new NotFoundException();
     }
-    return this.findForFeed(doctorId, id);
+    // в ответе поля опубликованной степени, как в черновике
+    const degree = await this.oxygenationDegreeRepository.findOneByOrFail({
+      id,
+    });
+    return this.toResponseDto(degree);
   }
 
   // логическое удаление через ORM: статус меняется на "удалён".
@@ -164,15 +166,15 @@ export class OxygenationDegreesService {
     }
   }
 
-    // лайк текущего врача: 1 - поставить, 0 - отменить
+  // лайк текущего врача: 1 - поставить, 0 - отменить
   async setLike(
     doctorId: number,
     id: number,
     isLiked: number,
-  ): Promise<OxygenationDegreeResponseDto> {
+  ): Promise<OxygenationDegreeFeedDto> {
     // лайкнуть можно только опубликованную степень, иначе здесь будет 404
     const degree = await this.findForFeed(doctorId, id);
- 
+
     // строка в таблице м-м добавляется или удаляется, только если лайк меняется
     const like = { doctorId, oxygenationDegreeId: id };
     if (isLiked === 1 && degree.isLiked === 0) {
@@ -183,13 +185,14 @@ export class OxygenationDegreesService {
     }
     return this.findForFeed(doctorId, id);
   }
- 
-  // лайки одной степени - два коротких запроса к таблице м-м:
+
+  // степень в ленте: её поля, количество лайков и признак лайка текущего врача.
+  // Лайки одной степени - два коротких запроса к таблице м-м:
   // SELECT COUNT(*) и проверка, есть ли строка текущего врача
-  private async toResponseDtoWithLikes(
+  private async toFeedDto(
     degree: OxygenationDegree,
     doctorId: number,
-  ): Promise<OxygenationDegreeResponseDto> {
+  ): Promise<OxygenationDegreeFeedDto> {
     const likesCount = await this.oxygenationDegreeLikeRepository.count({
       where: { oxygenationDegreeId: degree.id },
     });
@@ -197,16 +200,17 @@ export class OxygenationDegreesService {
       oxygenationDegreeId: degree.id,
       doctorId,
     });
-    return this.toResponseDto(degree, doctorId, likesCount, isLiked);
+    return {
+      ...this.toResponseDto(degree),
+      likesCount,
+      isLiked: isLiked ? 1 : 0,
+    };
   }
 
-  // сериализация: из модели в ответ переносятся только нужные клиенту поля,
-  // к ним добавляются количество лайков и два признака 0/1
+  // сериализация: из модели в ответ переносятся только нужные клиенту поля.
+  // Лайки и признаки 0/1 добавляют методы списка и ленты
   private toResponseDto(
     degree: OxygenationDegree,
-    doctorId: number,
-    likesCount: number,
-    isLiked: boolean,
   ): OxygenationDegreeResponseDto {
     return {
       id: degree.id,
@@ -216,9 +220,6 @@ export class OxygenationDegreesService {
       videoUrl: degree.videoUrl,
       pfRatioUpperBound: degree.pfRatioUpperBound,
       mortalityRate: degree.mortalityRate,
-      likesCount,
-      isCreator: degree.creatorId === doctorId ? 1 : 0,
-      isLiked: isLiked ? 1 : 0,
     };
   }
 }

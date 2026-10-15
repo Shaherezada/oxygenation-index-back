@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, Min } from 'class-validator';
- 
+
 // параметры списка: GET /api/oxygenation-degrees?maxPfRatio=200
 export class OxygenationDegreeFiltersDto {
   // верхняя граница индекса PaO2/FiO2 не выше указанной, мм рт. ст.
